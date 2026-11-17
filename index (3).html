@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>ساعات العمل - اليابان</title>
+<style>
+  :root{--bg:#f3f5f7;--card:#fff;--ink:#1c2630;--mute:#6b7785;--ok:#0f766e;--warn:#b45309;--bad:#b91c1c;--line:#e2e8ee}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);padding:12px;padding-bottom:40px;max-width:520px;margin-inline:auto}
+  h1{font-size:18px;margin:4px 0 12px}
+  .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .hero{text-align:center;color:#fff;background:var(--ok)}
+  .hero.warn{background:var(--warn)}
+  .hero.bad{background:var(--bad)}
+  .hero .lbl{font-size:14px;opacity:.9}
+  .hero .big{font-size:44px;font-weight:700;margin:4px 0}
+  .hero .sub{font-size:13px;opacity:.95}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .stat .lbl{font-size:12px;color:var(--mute)}
+  .stat .val{font-size:22px;font-weight:700;margin-top:2px}
+  .bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+  .bar>i{display:block;height:100%;background:var(--ok)}
+  label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+  input,select,button{font:inherit}
+  input[type=date],input[type=time],input[type=number]{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+  .tabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-top:6px}
+  .tabs button{flex:1;border:0;background:transparent;padding:8px;border-radius:8px;color:var(--mute)}
+  .tabs button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .btn{width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;background:var(--ok);color:#fff;margin-top:14px}
+  .btn.sec{background:#e8edf1;color:var(--ink);margin-top:8px;font-weight:600}
+  .btn.del{background:#fde8e8;color:var(--bad)}
+  .preview{margin-top:10px;font-size:14px;color:var(--mute)}
+  .preview b{color:var(--ink)}
+  .hist{list-style:none;margin:0;padding:0}
+  .hist li{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .hist li:last-child{border:0}
+  .hist .d{font-size:14px}
+  .hist .d small{display:block;color:var(--mute);font-size:12px}
+  .hist .h{font-weight:700}
+  .hist .over{color:var(--bad)}
+  .mnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .mnav button{border:0;background:var(--bg);border-radius:8px;padding:6px 12px;font-size:16px}
+  .msg{font-size:13px;margin-top:8px;color:var(--bad)}
+  .note{font-size:12px;color:var(--mute);line-height:1.6}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<h1>⏱️ ساعات العمل — حد 28 ساعة / 7 أيام</h1>
+
+<!-- الملخص -->
+<div id="hero" class="card hero">
+  <div class="lbl">المسموح لك تعمل اليوم</div>
+  <div class="big" id="allowedToday">--</div>
+  <div class="sub" id="heroSub"></div>
+</div>
+
+<div class="grid" style="margin-bottom:12px">
+  <div class="stat">
+    <div class="lbl">آخر 7 أيام (مع اليوم)</div>
+    <div class="val" id="weekTotal">--</div>
+    <div class="bar"><i id="weekBar" style="width:0%"></i></div>
+  </div>
+  <div class="stat">
+    <div class="lbl">المسموح غدًا (إذا ما اشتغلت)</div>
+    <div class="val" id="tomorrow">--</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mnav">
+    <button id="prevM">‹</button>
+    <div><div class="lbl" style="font-size:12px;color:var(--mute);text-align:center">مجموع الشهر</div>
+    <div style="text-align:center"><b id="monthName"></b> — <b id="monthTotal" style="font-size:20px"></b></div></div>
+    <button id="nextM">›</button>
+  </div>
+</div>
+
+<!-- الإدخال -->
+<div class="card">
+  <b>تسجيل يوم</b>
+  <label>التاريخ</label>
+  <input type="date" id="date">
+
+  <div class="tabs">
+    <button id="tabTimes" class="on">وقت البداية والنهاية</button>
+    <button id="tabTotal">مجموع مباشر</button>
+  </div>
+
+  <div id="boxTimes">
+    <div class="row">
+      <div><label>بداية العمل</label><input type="time" id="start"></div>
+      <div><label>نهاية العمل</label><input type="time" id="end"></div>
+    </div>
+    <label>الراحة (بالدقائق، تنخصم)</label>
+    <input type="number" id="brk" min="0" step="5" value="0" inputmode="numeric">
+  </div>
+
+  <div id="boxTotal" class="hide">
+    <div class="row">
+      <div><label>ساعات</label><input type="number" id="th" min="0" max="24" step="1" value="0" inputmode="numeric"></div>
+      <div><label>دقائق</label><input type="number" id="tm" min="0" max="59" step="5" value="0" inputmode="numeric"></div>
+    </div>
+  </div>
+
+  <div class="preview">صافي ساعات اليوم: <b id="pv">0س 0د</b></div>
+  <div class="msg" id="msg"></div>
+  <button class="btn" id="save">حفظ</button>
+  <button class="btn sec del hide" id="del">حذف هذا اليوم</button>
+</div>
+
+<!-- السجل -->
+<div class="card">
+  <b>السجل (آخر 30 يوم)</b>
+  <ul class="hist" id="hist"></ul>
+  <div class="note" style="margin-top:8px">الرقم الصغير تحت كل يوم = مجموع 7 أيام تنتهي بهذا اليوم. الأحمر = تجاوز 28 ساعة.</div>
+</div>
+
+<div class="card">
+  <b>نسخة احتياطية</b>
+  <div class="note">البيانات محفوظة في متصفح هاتفك فقط. إذا مسحت بيانات المتصفح تضيع. خذ نسخة من وقت لوقت.</div>
+  <button class="btn sec" id="exp">تصدير نسخة (ملف)</button>
+  <button class="btn sec" id="imp">استيراد نسخة</button>
+  <input type="file" id="file" accept="application/json" class="hide">
+</div>
+
+<script>
+const LIMIT = 28*60;            // الحد بالدقائق
+const KEY = 'work-hours-v1';
+const $ = id => document.getElementById(id);
+
+// ---------- تخزين ----------
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+function store(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){ alert('تعذر الحفظ في المتصفح'); } }
+let data = load();   // { "YYYY-MM-DD": {min, start, end, brk} }
+
+// ---------- تواريخ ----------
+const pad = n => String(n).padStart(2,'0');
+function key(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parse(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d,12); }
+function addDays(k,n){ const d=parse(k); d.setDate(d.getDate()+n); return key(d); }
+function todayKey(){ return key(new Date()); }
+const AR_DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+// ---------- حسابات ----------
+function mins(k){ return (data[k] && data[k].min) || 0; }
+// مجموع n يوم تنتهي عند اليوم end (شامل)
+function sumDays(end,n){ let s=0; for(let i=0;i<n;i++) s+=mins(addDays(end,-i)); return s; }
+function fmt(m){ m=Math.max(0,Math.round(m)); return Math.floor(m/60)+'س '+pad(m%60)+'د'; }
+
+// ---------- العرض ----------
+let viewMonth = (()=>{const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()};})();
+
+function render(){
+  const t = todayKey();
+  const prev6 = sumDays(addDays(t,-1),6);          // آخر 6 أيام قبل اليوم
+  const todayMin = mins(t);
+  const allowed = Math.max(0, LIMIT - prev6);       // المسموح اليوم (حسب القاعدة)
+  const left = LIMIT - prev6 - todayMin;            // الباقي بعد ما سجلته اليوم
+  const week = prev6 + todayMin;
+
+  $('allowedToday').textContent = fmt(allowed);
+  let sub = 'مجموع آخر 6 أيام قبل اليوم: ' + fmt(prev6);
+  if(todayMin>0){
+    sub += ' • سجلت اليوم: ' + fmt(todayMin) + (left>=0 ? ' • باقي: '+fmt(left) : ' • تجاوز بـ '+fmt(-left));
+  }
+  $('heroSub').textContent = sub;
+  const hero = $('hero'); hero.className = 'card hero';
+  if(left<0) hero.classList.add('bad'); else if(allowed<=120 || left<=60) hero.classList.add('warn');
+
+  $('weekTotal').textContent = fmt(week) + ' / 28س';
+  const pct = Math.min(100, week/LIMIT*100);
+  const bar = $('weekBar'); bar.style.width = pct+'%';
+  bar.style.background = week>LIMIT ? 'var(--bad)' : (week>LIMIT-120 ? 'var(--warn)' : 'var(--ok)');
+
+  // المسموح غدًا = 28 - مجموع آخر 6 أيام تنتهي اليوم
+  $('tomorrow').textContent = fmt(Math.max(0, LIMIT - sumDays(t,6)));
+
+  // الشهر
+  const ym = viewMonth.y+'-'+pad(viewMonth.m+1)+'-';
+  let mt=0; for(const k in data){ if(k.startsWith(ym)) mt+=data[k].min||0; }
+  $('monthName').textContent = AR_MONTHS[viewMonth.m]+' '+viewMonth.y;
+  $('monthTotal').textContent = fmt(mt);
+
+  // السجل: آخر 30 يوم فيها تسجيل
+  const ul = $('hist'); ul.innerHTML='';
+  const keys = Object.keys(data).filter(k=>data[k].min>0).sort().reverse().slice(0,30);
+  if(!keys.length){ ul.innerHTML='<li style="cursor:default;color:var(--mute)">ما في تسجيلات بعد</li>'; }
+  keys.forEach(k=>{
+    const w = sumDays(k,7);
+    const li = document.createElement('li');
+    const d = parse(k);
+    li.innerHTML = '<div class="d">'+AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+
+      '<small class="'+(w>LIMIT?'over':'')+'">مجموع 7 أيام: '+fmt(w)+(w>LIMIT?' ⚠️':'')+'</small></div>'+
+      '<div class="h">'+fmt(data[k].min)+'</div>';
+    li.onclick = ()=>{ $('date').value=k; fillForm(); window.scrollTo({top:document.body.scrollHeight*0.25,behavior:'smooth'}); };
+    ul.appendChild(li);
+  });
+}
+
+// ---------- النموذج ----------
+let mode='times';
+function setMode(m){
+  mode=m;
+  $('tabTimes').classList.toggle('on',m==='times');
+  $('tabTotal').classList.toggle('on',m==='total');
+  $('boxTimes').classList.toggle('hide',m!=='times');
+  $('boxTotal').classList.toggle('hide',m!=='total');
+  preview();
+}
+function toMin(s){ if(!s) return null; const [h,m]=s.split(':').map(Number); return h*60+m; }
+function formMinutes(){
+  if(mode==='total'){
+    return (parseInt($('th').value)||0)*60 + (parseInt($('tm').value)||0);
+  }
+  const s=toMin($('start').value), e=toMin($('end').value);
+  if(s===null||e===null) return 0;
+  let diff = e - s; if(diff<0) diff += 24*60;        // الشغل عبر منتصف الليل
+  return Math.max(0, diff - (parseInt($('brk').value)||0));
+}
+function preview(){
+  const m=formMinutes(); $('pv').textContent=fmt(m);
+  const k=$('date').value;
+  const old = (data[k]&&data[k].min)||0;
+  if(k && m>0){
+    const w = sumDays(k,7) - old + m;
+    $('msg').textContent = w>LIMIT ? '⚠️ هذا يتجاوز 28 ساعة في 7 أيام ('+fmt(w)+')' : '';
+  } else $('msg').textContent='';
+}
+function fillForm(){
+  const k=$('date').value, e=data[k];
+  $('del').classList.toggle('hide', !(e&&e.min>0));
+  if(e){
+    if(e.start&&e.end){ setMode('times'); $('start').value=e.start; $('end').value=e.end; $('brk').value=e.brk||0; }
+    else { setMode('total'); $('th').value=Math.floor(e.min/60); $('tm').value=e.min%60; }
+  } else {
+    $('start').value=''; $('end').value=''; $('brk').value=0; $('th').value=0; $('tm').value=0;
+  }
+  preview();
+}
+function save(){
+  const k=$('date').value; if(!k) return;
+  const m=formMinutes();
+  if(m<=0){ $('msg').textContent='اكتب ساعات صحيحة'; return; }
+  if(m>24*60){ $('msg').textContent='أكثر من 24 ساعة؟'; return; }
+  const rec={min:m};
+  if(mode==='times'){ rec.start=$('start').value; rec.end=$('end').value; rec.brk=parseInt($('brk').value)||0; }
+  data[k]=rec; store(data);
+  const d=parse(k); viewMonth={y:d.getFullYear(), m:d.getMonth()};
+  render(); fillForm();
+  const msg=$('msg'); const warn=msg.textContent; msg.style.color = warn? 'var(--bad)':'var(--ok)';
+  msg.textContent = warn || '✔ تم الحفظ';
+  setTimeout(()=>{ msg.style.color=''; preview(); },2500);
+}
+
+$('tabTimes').onclick=()=>setMode('times');
+$('tabTotal').onclick=()=>setMode('total');
+['start','end','brk','th','tm'].forEach(id=>$(id).addEventListener('input',preview));
+$('date').addEventListener('change',fillForm);
+$('save').onclick=save;
+$('del').onclick=()=>{ const k=$('date').value; if(confirm('حذف تسجيل هذا اليوم؟')){ delete data[k]; store(data); render(); fillForm(); } };
+$('prevM').onclick=()=>{ viewMonth.m--; if(viewMonth.m<0){viewMonth.m=11;viewMonth.y--;} render(); };
+$('nextM').onclick=()=>{ viewMonth.m++; if(viewMonth.m>11){viewMonth.m=0;viewMonth.y++;} render(); };
+
+// ---------- نسخة احتياطية ----------
+$('exp').onclick=()=>{
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='work-hours-'+todayKey()+'.json'; a.click();
+};
+$('imp').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+      const obj=JSON.parse(r.result);
+      if(typeof obj!=='object'||Array.isArray(obj)) throw 0;
+      if(confirm('استبدال البيانات الحالية بالنسخة؟')){ data=obj; store(data); render(); fillForm(); }
+    }catch(_){ alert('الملف غير صحيح'); } };
+  r.readAsText(f);
+};
+
+// ---------- بداية ----------
+$('date').value = todayKey();
+fillForm(); render();
+</script>
+</body>
+</html>
